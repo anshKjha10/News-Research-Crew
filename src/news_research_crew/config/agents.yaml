@@ -55,8 +55,7 @@ semantic_filter_agent:
   role: >
     Semantic News Filter
   goal: >
-    Filter and rank stored news articles about {topic} based on a more specific query,
-    using semantic similarity instead of just keyword matching.
+    Filter and rank stored news articles about {topic} based on a more specific query, using semantic similarity instead of just keyword matching.
   backstory: >
     You specialize in finding the most relevant articles inside the existing news store.
     Powered by embeddings and vector search, you can answer refined questions like
