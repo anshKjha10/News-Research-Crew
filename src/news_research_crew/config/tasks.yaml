@@ -1,0 +1,102 @@
+reuse_previous_news_task:
+  description: >
+    Before collecting fresh articles for {topic}, attempt to load recently stored articles
+    from local storage. If enough recent articles exist, reuse them instead of calling APIs.
+    Only if storage doesn't have fresh data should the collector fetch from NewsAPI, GDELT, and MediaStack.
+  expected_output: >
+    A structured list of previously stored articles for {topic}, or a note that fresh collection is required.
+  agent: storage_agent
+  tools:
+    - load_news_tool
+
+collection_task:
+  description: >
+     Collect recent news articles about {topic} from NewsAPI, GDELT, and MediaStack.
+     First, check a local cache for {topic}. If fresh cached data exists, reuse it.
+     Otherwise, fetch from external APIs, then update the cache.
+     Gather at least 50-100 articles from diverse sources to ensure comprehensive coverage.
+     Include metadata: source name, publication date, URL, and any sentiment data.
+  expected_output: >
+    A structured collection of news articles with titles, descriptions, URLs, sources,
+    and publication dates from all three APIs (NewsAPI, GDELT, MediaStack).
+  agent: collector_agent
+  tools:
+    - get_cached_news_tool
+    - set_cached_news_tool
+    - news_collector_tool
+
+persist_collection_task:
+  description: >
+    Store the collected articles about {topic} in a local storage layer (SQLite or JSON).
+    Ensure each article is saved with topic, source, title, url, description, and publication date.
+  expected_output: >
+    A confirmation message indicating how many articles were successfully stored for {topic}.
+  agent: storage_agent
+  context:
+    - collection_task
+  tools:
+    - save_news_tool
+  
+semantic_filter_task:
+  description: >
+    Given a refined query related to {topic} (e.g., "regulation", "market impact", or
+    "technical updates"), use semantic search over the stored articles to select the
+    most relevant 5-10 pieces. Return only these filtered articles for further
+    summarization or reporting.
+  expected_output: >
+    A short list of the most semantically relevant articles (with titles, URLs, and sources)
+    that best match the refined query within the broader topic.
+  agent: semantic_filter_agent
+  tools:
+    - load_news_tool
+    - semantic_search_tool
+
+summarization_task:
+  description: >
+    Extract key facts from the collected articles about {topic}.
+    Focus on: verifiable facts, data points, direct quotes, events, dates, and names.
+    Remove opinions, speculation, and emotional language.
+  expected_output: >
+    A factual summary with bullet points of core information extracted from all sources.
+  agent: summarizer_agent
+  context:
+    - collection_task
+
+bias_detection_task:
+  description: >
+    Analyze the collected articles and summaries for bias, sentiment and emotional tone.
+    Identify: political leaning, emotional language, source bias, loaded terms and framing.
+    Rate sentiment (positive/negative/neutral) and bias level (low/medium/high).
+  expected_output: >
+    A bias analysis report with specific examples of biased language, sentiment scores, and identified patterns across sources.
+  agent: bias_detector_agent
+  context:
+    - collection_task
+    - summarization_task      
+
+neutralization_task:
+  description: >
+    Rewrite biased, politically charged, or emotional content about {topic} using neutral language.
+    Replace loaded terms, balance one-sided narratives, remove emotional manipulation.
+    Preserve all facts and represent multiple perspectives fairly.
+  expected_output: >
+    Neutralized version of the news content with balanced language and fair representation of all viewpoints while maintaining factual accuracy.
+  agent: stance_equalizer_agent
+  context:
+    - summarization_task
+    - bias_detection_task
+
+reporting_task:
+  description: >
+    Create a comprehensive daily news digest about {topic} that synthesizes all collected information, summaries and neutralized content.
+    Structure: headline, key facts, multiple perspectives, context, sources cited.
+    Ensure balance, fairness, and journalistic integrity throughout the report.
+  expected_output: >
+    A polished, balanced news digest (800-1200 words) that presents all sides fairly, cites sources properly and allows readers to form their own conclusions.
+  agent: reporter_agent
+  context:
+    - collection_task
+    - summarization_task
+    - bias_detection_task
+    - neutralization_task
+  output_file: 'news_digest_{topic}.md'
