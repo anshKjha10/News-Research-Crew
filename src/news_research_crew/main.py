@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
 import warnings
+import os
 
 from datetime import datetime
 
@@ -8,19 +9,34 @@ from news_research_crew.crew import NewsResearchCrew
 
 warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
 
-# This main file is intended to be a way for you to run your
-# crew locally, so refrain from adding unnecessary logic into this file.
-# Replace with inputs you want to test with, it will automatically
-# interpolate any tasks and agents information
+def inputs_from_env():
+    """Build inputs from environment variables.
+
+    Required:
+      - TOPIC: the news topic to research
+    Optional:
+      - REFINED_QUERY: optional refined query for more specific news
+      - CURRENT_YEAR: override current year (default: now)
+      
+    """
+    topic = os.getenv("TOPIC")
+    if not topic:
+        raise Exception(
+            "Missing topic. Set TOPIC env var or call run_with_trigger with a JSON payload."
+        )
+    refined_query = os.getenv("REFINED_QUERY", "")
+    current_year = os.getenv("CURRENT_YEAR", str(datetime.now().year))
+    return{
+        "topic" : topic,
+        "refined_query" : refined_query,
+        "current_year" : current_year
+    }
 
 def run():
     """
     Run the crew.
     """
-    inputs = {
-        'topic': 'AI LLMs',
-        'current_year': str(datetime.now().year)
-    }
+    inputs = inputs_from_env()
 
     try:
         NewsResearchCrew().crew().kickoff(inputs=inputs)
@@ -32,12 +48,9 @@ def train():
     """
     Train the crew for a given number of iterations.
     """
-    inputs = {
-        "topic": "AI LLMs",
-        'current_year': str(datetime.now().year)
-    }
+    inputs = inputs_from_env()
     try:
-        NewsResearchCrew().crew().train(n_iterations=int(sys.argv[1]), filename=sys.argv[2], inputs=inputs)
+        NewsResearchCrew().crew().train(n_iterations=3, filename=sys.argv[2], inputs=inputs)
 
     except Exception as e:
         raise Exception(f"An error occurred while training the crew: {e}")
@@ -56,13 +69,10 @@ def test():
     """
     Test the crew execution and returns the results.
     """
-    inputs = {
-        "topic": "AI LLMs",
-        "current_year": str(datetime.now().year)
-    }
+    inputs = inputs_from_env()
 
     try:
-        NewsResearchCrew().crew().test(n_iterations=int(sys.argv[1]), eval_llm=sys.argv[2], inputs=inputs)
+        NewsResearchCrew().crew().test(n_iterations=3, eval_llm=sys.argv[2], inputs=inputs)
 
     except Exception as e:
         raise Exception(f"An error occurred while testing the crew: {e}")
@@ -83,8 +93,9 @@ def run_with_trigger():
 
     inputs = {
         "crewai_trigger_payload": trigger_payload,
-        "topic": "",
-        "current_year": ""
+        "topic": trigger_payload.get("topic", ""),
+        "refined_query": trigger_payload.get("refined_query", ""),
+        "current_year": trigger_payload.get("current_year", str(datetime.now().year))
     }
 
     try:

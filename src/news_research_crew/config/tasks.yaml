@@ -1,55 +1,33 @@
 reuse_previous_news_task:
   description: >
-    Before collecting fresh articles for {topic}, attempt to load recently stored articles
-    from local storage. If enough recent articles exist, reuse them instead of calling APIs.
-    Only if storage doesn't have fresh data should the collector fetch from NewsAPI, GDELT, and MediaStack.
+    Before collecting fresh articles for {topic}, use retrieve_news to load recently stored articles
+    from local SQLite database. If enough recent articles exist (at least 20), report them for reuse.
+    Otherwise, indicate that fresh collection is required.
   expected_output: >
     A structured list of previously stored articles for {topic}, or a note that fresh collection is required.
   agent: storage_agent
-  tools:
-    - load_news_tool
 
 collection_task:
   description: >
      Collect recent news articles about {topic} from NewsAPI, GDELT, and MediaStack.
-     First, check a local cache for {topic}. If fresh cached data exists, reuse it.
-     Otherwise, fetch from external APIs, then update the cache.
+     First, check the cache using get_cached_news. If fresh cached data exists, use it.
+     Otherwise, fetch from external APIs using news_fetcher, then cache the results.
      Gather at least 50-100 articles from diverse sources to ensure comprehensive coverage.
      Include metadata: source name, publication date, URL, and any sentiment data.
   expected_output: >
     A structured collection of news articles with titles, descriptions, URLs, sources,
     and publication dates from all three APIs (NewsAPI, GDELT, MediaStack).
   agent: collector_agent
-  tools:
-    - get_cached_news_tool
-    - set_cached_news_tool
-    - news_collector_tool
 
 persist_collection_task:
   description: >
-    Store the collected articles about {topic} in a local storage layer (SQLite or JSON).
-    Ensure each article is saved with topic, source, title, url, description, and publication date.
+    Store the collected articles about {topic} in a local storage layer (SQLite database).
+    Use the save_news tool to persist each article with topic, source, title, url, description, and publication date.
   expected_output: >
     A confirmation message indicating how many articles were successfully stored for {topic}.
   agent: storage_agent
   context:
     - collection_task
-  tools:
-    - save_news_tool
-  
-semantic_filter_task:
-  description: >
-    Given a refined query related to {topic} (e.g., "regulation", "market impact", or
-    "technical updates"), use semantic search over the stored articles to select the
-    most relevant 5-10 pieces. Return only these filtered articles for further
-    summarization or reporting.
-  expected_output: >
-    A short list of the most semantically relevant articles (with titles, URLs, and sources)
-    that best match the refined query within the broader topic.
-  agent: semantic_filter_agent
-  tools:
-    - load_news_tool
-    - semantic_search_tool
 
 summarization_task:
   description: >

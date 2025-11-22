@@ -3,6 +3,16 @@ from crewai.project import CrewBase, agent, crew, task
 from crewai.agents.agent_builder.base_agent import BaseAgent
 from typing import List
 
+# Import custom tools
+from news_research_crew.tools.custom_tool import (
+    news_fetcher,
+    save_news,
+    retrieve_news,
+    list_news_topics,
+    get_cached_news,
+    set_cached_news_tool
+)
+
 @CrewBase
 class NewsResearchCrew():
     """NewsResearchCrew crew"""
@@ -14,8 +24,9 @@ class NewsResearchCrew():
     @agent
     def storage_agent(self) -> Agent:
         return Agent(
-            config=self.agents_config['storage_agent'], 
-            memory=True,
+            config=self.agents_config['storage_agent'],
+            tools=[save_news, retrieve_news, list_news_topics],
+            # memory=True,
             verbose=True
         )
 
@@ -23,7 +34,8 @@ class NewsResearchCrew():
     def collector_agent(self) -> Agent:
         return Agent(
             config=self.agents_config['collector_agent'],
-            memory=True,
+            tools=[news_fetcher, get_cached_news, set_cached_news_tool],
+            # memory=True,
             verbose=True
         )
     
@@ -31,7 +43,7 @@ class NewsResearchCrew():
     def summarizer_agent(self) -> Agent:
         return Agent(
             config=self.agents_config['summarizer_agent'],
-            memory=True,
+            # memory=True,
             verbose=True
         )
     
@@ -39,7 +51,7 @@ class NewsResearchCrew():
     def bias_detector_agent(self) -> Agent:
         return Agent(
             config=self.agents_config['bias_detector_agent'],
-            memory=True,
+            # memory=True,
             verbose=True
         )
     
@@ -47,7 +59,7 @@ class NewsResearchCrew():
     def stance_equalizer_agent(self) -> Agent:
         return Agent(
             config=self.agents_config['stance_equalizer_agent'],
-            memory=True,
+            # memory=True,
             verbose=True
         )
     
@@ -55,15 +67,7 @@ class NewsResearchCrew():
     def reporter_agent(self) -> Agent:
         return Agent(
             config=self.agents_config['reporter_agent'],
-            memory=True,
-            verbose=True
-        )
-    
-    @agent
-    def semantic_filter_agent(self) -> Agent:
-        return Agent(
-            config=self.agents_config['semantic_filter_agent'],
-            memory=True,
+            # memory=True,
             verbose=True
         )
 
@@ -87,13 +91,6 @@ class NewsResearchCrew():
         return Task(
             config=self.tasks_config['persist_collection_task'],
             agent=self.storage_agent()
-        )
-    
-    @task
-    def semantic_filter_task(self) -> Task:
-        return Task(
-            config=self.tasks_config['semantic_filter_task'],
-            agent=self.semantic_filter_agent()
         )
     
     @task
@@ -134,7 +131,7 @@ class NewsResearchCrew():
             agents=self.agents,
             tasks=self.tasks, 
             process=Process.sequential,
-            memory=True,
+            # memory=True,
             verbose=True,
            
         )
