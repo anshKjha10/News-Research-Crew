@@ -66,11 +66,76 @@ neutralization_task:
 
 reporting_task:
   description: >
-    Create a comprehensive daily news digest about {topic} that synthesizes all collected information, summaries and neutralized content.
-    Structure: headline, key facts, multiple perspectives, context, sources cited.
-    Ensure balance, fairness, and journalistic integrity throughout the report.
+    Create a comprehensive, well-formatted daily news digest about {topic} that synthesizes all collected information, summaries and neutralized content.
+    
+    Use this EXACT markdown structure for maximum readability:
+    
+    # [Compelling Headline]
+    
+    ---
+    
+    ## 📊 Executive Summary
+    Brief 2-3 sentence overview of the main story
+    
+    ## 🔑 Key Facts
+    - **Location:** Where it happened
+    - **Date:** When it happened
+    - **Impact:** Key numbers, statistics, casualties (if applicable)
+    - **Status:** Current situation
+    - **Response:** Actions being taken
+    
+    ---
+    
+    ## 📰 The Story
+    
+    ### What Happened
+    Detailed narrative of events in clear paragraphs
+    
+    ### Why It Matters
+    Context and significance
+    
+    ### What's Next
+    Future developments and expectations
+    
+    ---
+    
+    ## 🗣️ Multiple Perspectives
+    
+    ### Government/Official Response
+    - What authorities are saying and doing
+    
+    ### Affected Communities
+    - Impact on people on the ground
+    
+    ### Expert Analysis
+    - Professional/technical viewpoints
+    
+    ### International Reaction
+    - Global response and assistance
+    
+    ---
+    
+    ## 🌍 Broader Context
+    Historical background, related events, long-term implications
+    
+    ---
+    
+    ## 📚 Sources
+    List all sources used with proper attribution
+    
+    ---
+    
+    *Report compiled from multiple verified news sources • Last updated: [Date/Time]*
+    
   expected_output: >
-    A polished, balanced news digest (800-1200 words) that presents all sides fairly, cites sources properly and allows readers to form their own conclusions.
+    A professionally formatted, visually appealing markdown news digest (800-1200 words) with:
+    - Clear hierarchical headings (H1, H2, H3)
+    - Emoji icons for visual navigation
+    - Bullet points and numbered lists for readability
+    - Bold text for emphasis on key terms
+    - Horizontal rules (---) to separate major sections
+    - Proper citation of all sources
+    - Neutral, balanced tone presenting all perspectives fairly
   agent: reporter_agent
   context:
     - collection_task
